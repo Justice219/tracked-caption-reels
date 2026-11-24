@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/logo.png" width="520" alt="Tracked Caption Reels"></p>
+<p align="center"><img src="assets/tracked-caption-reels-wordmark.png" width="520" alt="Tracked Caption Reels"></p>
 
 # Tracked Caption Reels
 
