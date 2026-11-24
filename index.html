@@ -1,0 +1,170 @@
+<!doctype html>
+<!--
+  Landing page for the Tracked Caption Reels skill (served by GitHub Pages from the repository root).
+  Static and dependency-free apart from two Google Fonts: the reels play straight from /examples, the install
+  command has a copy button, and nothing is loaded until it is needed (videos use preload="none" + posters).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tracked Caption Reels</title>
+<meta name="description" content="A Claude Code skill that edits raw footage into vertical reels with captions that track the speaker. One command to install.">
+<meta property="og:title" content="Tracked Caption Reels">
+<meta property="og:description" content="A Claude Code skill that edits raw footage into reels with captions glued to the speaker. One command to install.">
+<meta property="og:image" content="https://justice219.github.io/tracked-caption-reels/assets/tracked-caption-reels-wordmark.png">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'">
+<link rel="icon" href="assets/tracked-caption-reels-wordmark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800;1,900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  /* palette taken from the wordmark: navy ground, royal blue, white, one warm accent from the reels' key words */
+  :root { --navy:#070b16; --panel:#0e1526; --line:#1d2740; --blue:#0a5cf5; --blue-2:#3d86ff; --white:#f5f7fb; --dim:#9aa6bf; --gold:#ffd600; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin:0; background:var(--navy); color:var(--white); font:16px/1.6 Inter, system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:var(--blue-2); text-decoration:none; } a:hover { text-decoration:underline; }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 20px; }
+  h1, h2 { font-family:"Barlow Condensed", Impact, sans-serif; font-style:italic; font-weight:900; text-transform:uppercase; line-height:.95; margin:0; letter-spacing:.01em; }
+  h2 { font-size:clamp(34px, 6vw, 56px); margin-bottom:10px; }
+  h2 span { color:var(--blue-2); }
+  p.lead { color:var(--dim); max-width:640px; margin:0 0 28px; }
+
+  /* hero */
+  header { padding:56px 0 28px; text-align:center; background:radial-gradient(900px 420px at 50% -10%, rgba(10,92,245,.28), transparent 70%); }
+  header img { width:min(560px, 88vw); height:auto; }
+  header h1 { font-size:clamp(30px, 5.2vw, 52px); margin:26px auto 12px; max-width:820px; }
+  header h1 em { font-style:italic; color:var(--gold); }
+  header p { color:var(--dim); max-width:620px; margin:0 auto; font-size:18px; }
+
+  /* install */
+  .install { margin:34px auto 0; max-width:820px; text-align:left; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; }
+  .install .label { font:600 12px/1 Inter, sans-serif; letter-spacing:.14em; text-transform:uppercase; color:var(--blue-2); margin-bottom:12px; }
+  .cmd { display:flex; gap:10px; align-items:stretch; }
+  .cmd code { flex:1; min-width:0; overflow-x:auto; white-space:nowrap; background:#060912; border:1px solid var(--line); border-radius:10px; padding:14px 16px; font:500 14px/1.4 "JetBrains Mono", ui-monospace, monospace; color:#dfe7ff; }
+  .cmd button { flex:none; border:0; border-radius:10px; padding:0 20px; background:var(--blue); color:#fff; font:600 14px Inter, sans-serif; cursor:pointer; transition:background .15s; }
+  .cmd button:hover { background:var(--blue-2); } .cmd button:focus-visible { outline:2px solid var(--gold); outline-offset:2px; }
+  .install ol { margin:16px 0 0; padding-left:20px; color:var(--dim); } .install ol b { color:var(--white); font-weight:600; }
+  .install q { color:var(--white); quotes:"\201C" "\201D"; }
+
+  section { padding:64px 0 8px; }
+  /* what it does */
+  .features { display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:14px; }
+  .features div { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; }
+  .features b { display:block; font:italic 900 24px/1 "Barlow Condensed", sans-serif; text-transform:uppercase; margin-bottom:8px; }
+  .features span { color:var(--dim); font-size:15px; }
+
+  /* reels */
+  .reels { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:16px; }
+  figure { margin:0; }
+  figure video { display:block; width:100%; aspect-ratio:9/16; object-fit:cover; background:#000; border-radius:14px; border:1px solid var(--line); }
+  figcaption { margin-top:8px; font-size:14px; color:var(--dim); } figcaption b { color:var(--white); font-weight:600; }
+
+  .refs { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:14px; }
+  .refs a { display:block; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; color:var(--white); }
+  .refs a:hover { border-color:var(--blue); text-decoration:none; } .refs small { display:block; color:var(--dim); margin-top:6px; }
+
+  footer { padding:56px 0 64px; color:var(--dim); font-size:14px; text-align:center; }
+  @media (max-width:560px) { .cmd { flex-direction:column; } .cmd button { padding:12px; } .reels { grid-template-columns:repeat(2, 1fr); gap:10px; } }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <img src="assets/tracked-caption-reels-wordmark.png" width="1881" height="836" alt="Tracked Caption Reels">
+    <h1>Captions that stay <em>glued</em> to the person talking</h1>
+    <p>A Claude Code skill that turns raw talking-head or job-site footage into vertical reels: word stacks that follow the speaker, big key words behind their head, face-tracked crops, tight cuts.</p>
+
+    <div class="install" id="install">
+      <div class="label">Install in one command</div>
+      <div class="cmd">
+        <code id="cmd">git clone https://github.com/Justice219/tracked-caption-reels ~/.claude/skills/tracked-caption-reels</code>
+        <button type="button" id="copy" aria-label="Copy the install command">Copy</button>
+      </div>
+      <ol>
+        <li><b>Paste it in your terminal.</b> It puts the skill where <a href="https://claude.com/claude-code">Claude Code</a> looks for skills.</li>
+        <li><b>Open Claude Code</b> in the folder with your clips and say: <q>edit these clips in the tracked captions style</q>.</li>
+        <li><b>Needs:</b> a Mac with Apple Silicon, Python 3.11+ and ffmpeg. Bring your own fonts, sound effects and music.</li>
+      </ol>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>What it <span>does</span></h2>
+    <p class="lead">You film. Claude watches every clip, plans the cut from what was actually said, and renders it.</p>
+    <div class="features">
+      <div><b>Word stacks</b><span>Every line becomes 2 to 4 words in mixed sizes and colours that build as they are spoken.</span></div>
+      <div><b>Behind the head</b><span>Key words go large behind the speaker, lifted until they stay readable.</span></div>
+      <div><b>Face tracking</b><span>Type rides on the head and chest; jump cuts step through crops that follow the face.</span></div>
+      <div><b>Tight cuts</b><span>Ums, pauses and stumbled lines are cut. B-roll lands on the word it shows.</span></div>
+      <div><b>Lip-sync videos</b><span>Each take is placed on the exact second of the song it was filmed against.</span></div>
+      <div><b>No boxes</b><span>No panels, pills or name plates. Just type, a light grade and quiet music.</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Result <span>reels</span></h2>
+    <p class="lead">Nine reels edited with this skill from one day of landscaping footage. Tap one to play.</p>
+    <div class="reels" id="reels"></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>The look it <span>copies</span></h2>
+    <p class="lead">Three reels set the style. The skill studies them before it plans an edit.</p>
+    <div class="refs">
+      <a href="https://www.instagram.com/reel/DgDgEH8KPu5/" rel="noopener">Cowboy captions<small>Stacked multi-colour words behind the head; cuts that crop to the face</small></a>
+      <a href="https://www.instagram.com/reel/DgDuTGiEypd/" rel="noopener">Realtor edit<small>One big word behind the head with a small label; numbers that count up</small></a>
+      <a href="https://www.instagram.com/reel/DfnWppVheEZ/" rel="noopener">Car detailer ad<small>Word stacks riding on the chest with glowing key words</small></a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <a href="https://github.com/Justice219/tracked-caption-reels">Source, docs and the engine on GitHub</a><br>
+    The result reels show a real business, Canopy Land Solutions of San Antonio, and are included as examples only.
+  </div>
+</footer>
+
+<script>
+  // The nine example reels: file stem in /examples, title, length. Built with DOM calls (no HTML strings).
+  const REELS = [
+    ["driveway-ad", "Driveway ad", "27 s"], ["free-3d-design-offer", "Offer with 3D renders", "31 s"],
+    ["customer-testimonial", "Two-person testimonial", "70 s"], ["trencher-explainer", "Equipment explainer", "36 s"],
+    ["driveway-and-sidewalk-tour", "Two-presenter tour", "70 s"], ["kubota-scl-1000", "Equipment explainer", "48 s"],
+    ["pool-backyard-walkthrough", "Walk-and-talk", "53 s"], ["crew-skit", "Comedy skit", "42 s"],
+    ["lip-sync-music-video", "Lip-sync music video", "68 s"],
+  ];
+  const grid = document.getElementById("reels");
+  for (const [stem, title, length] of REELS) {
+    const figure = document.createElement("figure");
+    const video = document.createElement("video");
+    video.controls = true; video.playsInline = true; video.preload = "none";      // nothing downloads until play
+    video.poster = `examples/${stem}.jpg`; video.src = `examples/${stem}.mp4`;
+    video.setAttribute("aria-label", `${title}, ${length}`);
+    // one reel at a time: starting one pauses the others
+    video.addEventListener("play", () => document.querySelectorAll("video").forEach(v => v !== video && v.pause()));
+    const caption = document.createElement("figcaption");
+    const name = document.createElement("b"); name.textContent = title;
+    caption.append(name, ` · ${length}`);
+    figure.append(video, caption); grid.append(figure);
+  }
+  // Copy button: Clipboard API, with a selection fallback where it is unavailable.
+  const button = document.getElementById("copy"), cmd = document.getElementById("cmd");
+  button.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(cmd.textContent); button.textContent = "Copied"; }
+    catch { const range = document.createRange(); range.selectNodeContents(cmd); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range); button.textContent = "Selected"; }
+    setTimeout(() => { button.textContent = "Copy"; }, 1800);
+  });
+</script>
+</body>
+</html>

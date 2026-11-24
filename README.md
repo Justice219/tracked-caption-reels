@@ -2,6 +2,8 @@
 
 # Tracked Caption Reels
 
+**Landing page with playable reels and a one-command install: https://justice219.github.io/tracked-caption-reels/**
+
 A [Claude Code](https://claude.com/claude-code) skill, plus the Python engine behind it, for turning raw
 talking-head or job-site footage into vertical reels where **the captions ride on the speaker**:
 
@@ -107,6 +109,7 @@ are included here.
 | `scripts/plan_example.py` | Three real plans: an explainer, a short ad with a still cutaway, a lip-sync video |
 | `scripts/sync.py`, `transcribe.py`, `words.py`, `retx.py`, `gaps.py` | Sync, transcripts, word times, pause check |
 | `references/inspiration/` | Links to the three reels the style copies |
+| `index.html` | The GitHub Pages landing page (served from the repository root) |
 | `examples/` | The nine result reels (720x1280) and their cover frames |
 
 ## Notes
