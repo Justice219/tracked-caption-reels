@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/logo.png" width="300" alt="Tracked Caption Reels logo: a phone frame with chunky colourful caption words popping out behind a laughing cartoon person"></p>
+<p align="center"><img src="assets/logo.png" width="520" alt="Tracked Caption Reels"></p>
 
 # Tracked Caption Reels
 
@@ -13,7 +13,14 @@ talking-head or job-site footage into vertical reels where **the captions ride o
 
 No boxes, panels or name plates. Just type glued to people.
 
-## Reference reels
+## The look it copies
+
+Three reels set the style (see [`references/inspiration`](references/inspiration/README.md)):
+[cowboy captions](https://www.instagram.com/reel/DgDgEH8KPu5/),
+a [realtor edit](https://www.instagram.com/reel/DgDuTGiEypd/) and
+a [car detailer ad](https://www.instagram.com/reel/DfnWppVheEZ/).
+
+## Result reels
 
 Nine reels made with this engine from one day of landscaping footage (click a cover to play the file).
 
@@ -99,11 +106,12 @@ are included here.
 | `scripts/edit.py` | The renderer (tracking, word stacks, crops, B-roll, sound) |
 | `scripts/plan_example.py` | Three real plans: an explainer, a short ad with a still cutaway, a lip-sync video |
 | `scripts/sync.py`, `transcribe.py`, `words.py`, `retx.py`, `gaps.py` | Sync, transcripts, word times, pause check |
-| `examples/` | The nine reference reels (720x1280) and their cover frames |
+| `references/inspiration/` | Links to the three reels the style copies |
+| `examples/` | The nine result reels (720x1280) and their cover frames |
 
 ## Notes
 
-- The reference reels show real people and a real business (Canopy Land Solutions, San Antonio) and are
+- The result reels show real people and a real business (Canopy Land Solutions, San Antonio) and are
   included as examples of the style only. The lip-sync example contains a commercially released song.
 - The reel style follows three public reference reels the owner chose; the code here is original.
 - No licence has been chosen yet, so by default all rights are reserved by the author.

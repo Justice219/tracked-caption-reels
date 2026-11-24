@@ -11,6 +11,8 @@ and colours that builds word by word and rides on the speaker**. Key words go la
 No boxes or panels anywhere.
 
 The engine is bundled: `scripts/edit.py` renders from a `plan.py` you write per shoot.
+To see the target look, watch the three source reels in `references/inspiration/` and the nine results in
+`examples/` before planning.
 
 ## Workflow
 
