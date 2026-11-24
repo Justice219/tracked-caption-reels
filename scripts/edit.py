@@ -58,7 +58,8 @@ AROLL = {mic: [tuple(item) for item in clips] for mic, clips in _PROJECT.get("ar
 TURN = _PROJECT.get("turn", {})
 #   "sfx_dir":   folder of sound effects (.wav / .mp3); Picker.POOLS names the files it draws from
 #   "music_dir": folder of music beds (.m4a) for a reel's `music` key
-SFX_DIR = Path(_PROJECT.get("sfx_dir", str(Path.home() / "Downloads/50 SFX pack☠️"))).expanduser()
+#                (default: the 23 effects bundled with the skill in its sfx/ folder)
+SFX_DIR = Path(_PROJECT.get("sfx_dir", str(Path.home() / ".claude/skills/tracked-caption-reels/sfx"))).expanduser()
 MUSIC_DIR = Path(_PROJECT.get("music_dir", str(ROOT.parents[2] / "Music" / "NCS"))).expanduser()
 CLIP_LEN = {k: v["duration"] for k, v in json.loads((WORK / "sync.json").read_text()).items()} if (WORK / "sync.json").exists() else {}
 

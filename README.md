@@ -91,12 +91,12 @@ cp plan_example.py plan.py                                  # rewrite for your f
 ```
 
 `work/project.json` carries everything specific to a shoot: which clip belongs to which lav recording, how each
-clip must be turned upright, and where your fonts' companions live (sound effects and music folders, the song
-for a lip-sync video). `references/project_example.json` is a filled-in example.
+clip must be turned upright, your music folder (and a sound-effects folder if you do not want the bundled one),
+and the song for a lip-sync video. `references/project_example.json` is a filled-in example.
 
-Bring your own fonts (the engine looks in `~/Library/Fonts` for Halenoir Black, Halenoir Bold and Apple
-Garamond Bold Italic; change `SANS`, `SERIF`, `SMALL` in `edit.py` for others), sound effects and music. None
-are included here.
+The 23 sound effects the engine uses are included in [`sfx/`](sfx/) and are picked up by default. Bring your
+own fonts (the engine looks in `~/Library/Fonts` for Halenoir Black, Halenoir Bold and Apple Garamond Bold
+Italic; change `SANS`, `SERIF`, `SMALL` in `edit.py` for others) and music; those are not included.
 
 ## Repository layout
 
@@ -110,6 +110,7 @@ are included here.
 | `scripts/sync.py`, `transcribe.py`, `words.py`, `retx.py`, `gaps.py` | Sync, transcripts, word times, pause check |
 | `references/inspiration/` | Links to the three reels the style copies |
 | `index.html` | The GitHub Pages landing page (served from the repository root) |
+| `sfx/` | The 23 sound effects the engine draws from |
 | `examples/` | The nine result reels (720x1280) and their cover frames |
 
 ## Notes
