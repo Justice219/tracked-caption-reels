@@ -7,7 +7,7 @@ description: Use when editing talking-head or job-site footage into vertical ree
 
 Vertical reels (1080x1920, 24 fps) where **every spoken line is a stack of 2-4 words in mixed sizes, fonts
 and colours that builds word by word and rides on the speaker**. Key words go large *behind* the head
-(person matte); the rest sits on the chest. Numbers count up. Framing steps through face crops on jump cuts.
+(person matte); the rest rides at the waist. Numbers count up. Framing steps through face crops on jump cuts.
 No boxes or panels anywhere.
 
 The engine is bundled: `scripts/edit.py` renders from a `plan.py` you write per shoot.
@@ -36,6 +36,7 @@ To see the target look, watch the three source reels in `references/inspiration/
 |---|---|
 | No boxes | No glass cards, pills, lower-third name plates or "free quote" call-outs. Type only. |
 | Text behind the head, but readable | A stack is lifted until the person hides < 30 % of it. |
+| Waist-height captions, new palette per video | Ordinary stacks sit at the waist; every reel in a batch gets its own colour scheme. |
 | Tracking | Type follows the head/chest smoothly; crops follow the face. Never re-centre abruptly. |
 | Tight cuts | Drop "um"/"uh", pauses > 0.24 s, stumbles and unsure takes. Cut a stumbled line entirely. |
 | B-roll must show the thing being said | Check each cutaway frame; filler shots get removed. |

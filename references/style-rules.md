@@ -10,6 +10,10 @@ copies them; these rules are the corrections made on the way.
 - **Stacks, not sentences.** 2-4 words per stack (5 if it holds a key word); break at punctuation or a pause
   over 0.45 s; never strand "to"/"the" at the end of a stack. Words pop in at their own spoken moment and the
   stack leaves together.
+- **Ordinary stacks ride at the waist**, not the chest (chest height read as "too high up"), about three
+  quarters of the way from shoulders to hips.
+- **A different colour scheme for every video** in a batch (cool blues, greens, coral and pink, the warm
+  yellow set, ...). Reusing one palette made the reels feel the same.
 - **Three roles in a stack:** little function words (white, 52-64 px, neighbours share a line), ordinary words
   (white, heavy sans), and one accent word. In a chest stack the accent is the longest content word.
 - **Key words** (the plan's `keys`) make a *head* stack: the key word is fitted up to ~230-270 px, alternating

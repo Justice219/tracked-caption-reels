@@ -292,10 +292,17 @@ class Track:
             if (shoulders[:, 2] > 0.35).all():
                 span = float(abs(shoulders[0, 0] - shoulders[1, 0]))
                 size = max(span * 0.48, width * 0.2)
-                chests.append((shoulders[:, 0].mean(), shoulders[:, 1].mean() + max(span, size * 1.6) * 0.42))
+                hips = k[11:13]
+                # captions ride at the waist (owner: chest height was "a bit too high up"): three quarters of the
+                # way from shoulders to hips, or a shoulder-width-and-a-bit below the shoulders when hips are unseen
+                if (hips[:, 2] > 0.35).all():
+                    drop = (hips[:, 1].mean() - shoulders[:, 1].mean()) * 0.78
+                else:
+                    drop = max(span, size * 1.6) * 1.15
+                chests.append((shoulders[:, 0].mean(), shoulders[:, 1].mean() + drop))
             else:
                 size = width * 0.3
-                chests.append((hx, hy + size * 2.3))
+                chests.append((hx, hy + size * 3.4))
             heads.append((hx, hy))
             sizes.append(size)
         self.people = len(heads)
@@ -646,6 +653,11 @@ def resolve(reel: dict, timeline: Timeline) -> dict:
             turn = turn + 1 if clip == previous else 0
             shots.append(dict(start=float(start), clip=clip, clip_in=a - offset, level=FACE_LEVELS[turn % len(FACE_LEVELS)], cut=clip != previous))
             previous = clip
+    # optional montage after the last spoken word: reel["tail"] = [(clip, clip_in, seconds), ...] (music swells)
+    cursor = getattr(timeline, "voice_end", timeline.duration)
+    for clip, clip_in, length in reel.get("tail", []):
+        shots.append(dict(start=cursor, clip=clip, clip_in=clip_in, level=None, cut=True, tail=True))
+        cursor += length
     for shot, following in zip(shots, shots[1:] + [None]):
         shot["end"] = following["start"] if following else timeline.duration
     broll = [dict(start=timeline.out(m, s) + shift, end=timeline.out(m, s) + shift + length, clip=clip, clip_in=clip_in, speed=speed)
@@ -716,7 +728,7 @@ def picture(name: str, reel: dict, timeline: Timeline, plan: dict, out_path: Pat
                 came_back = [x for x in plan["broll"] if 0 <= t - x["end"] < 0.2]
                 if came_back:
                     frame = whip(frame, t - came_back[0]["end"])
-                elif shot["cut"] and shot["start"] > 0.05 and reel.get("whip_cuts", False):
+                elif shot["cut"] and shot["start"] > 0.05 and (reel.get("whip_cuts", False) or shot.get("tail")):
                     frame = whip(frame, age)
                 if seen:                                    # tracked points in the cropped picture's coordinates
                     head = ((track.head[0] - centre[0]) * scale + W / 2, (track.head[1] - centre[1]) * scale + H / 2)
@@ -749,9 +761,9 @@ def picture(name: str, reel: dict, timeline: Timeline, plan: dict, out_path: Pat
                 elif cluster["head"]:
                     draw_cluster(frame, cluster, t, W / 2, 640)
                 elif on_person:                             # riding on the chest
-                    draw_cluster(frame, cluster, t, min(max(chest[0], half), W - half), min(max(chest[1], 700), 1330))
+                    draw_cluster(frame, cluster, t, min(max(chest[0], half), W - half), min(max(chest[1], 760), 1440))
                 else:
-                    draw_cluster(frame, cluster, t, W / 2, 1180)
+                    draw_cluster(frame, cluster, t, W / 2, 1260)
             for card in plan["cards"]:
                 if card["start"] <= t < card["end"]:
                     draw_card(frame, card, t, accent)
@@ -845,7 +857,7 @@ def sound(name: str, reel: dict, timeline: Timeline, plan: dict, out_path: Path)
         voice = load_audio(clean)[:length]
         mix = np.repeat(np.pad(voice, (0, length - len(voice)))[:, None], 2, axis=1)
     cues = [(b["start"] - 0.05, "whoosh") for b in plan["broll"]]
-    cues += [(s["start"] - 0.05, "whoosh") for s in plan["shots"][1:] if s["cut"] and reel.get("whip_cuts", False)]
+    cues += [(s["start"] - 0.05, "whoosh") for s in plan["shots"][1:] if s["cut"] and (reel.get("whip_cuts", False) or s.get("tail"))]
     cues += [(c["start"], "pop") for c in plan["clusters"] if c["head"]]          # one soft tick as each big word lands
     for card in plan["cards"]:
         default = {"stamp": "hit", "cta": "pop", "lower": "whoosh", "stars": "pop", "icons": "hit", "question": "pop", "label": "pop", "note": None, "sticker": "hit"}[card["kind"]]
@@ -877,6 +889,13 @@ def sound(name: str, reel: dict, timeline: Timeline, plan: dict, out_path: Path)
         ramp_n = int(0.6 * RATE)
         bed[:ramp_n] *= np.linspace(0, 1, ramp_n, dtype=np.float32)[:, None]
         bed[-ramp_n:] *= np.linspace(1, 0, ramp_n, dtype=np.float32)[:, None]
+        if reel.get("tail"):                            # nobody is talking in the tail montage: bring the music up
+            swell = np.ones(len(bed), np.float32)
+            start_n = int(timeline.voice_end * RATE)
+            rise = min(int(0.6 * RATE), max(len(bed) - start_n, 0))
+            swell[start_n:start_n + rise] = np.linspace(1, reel.get("tail_music", 6.0), rise, dtype=np.float32)
+            swell[start_n + rise:] = reel.get("tail_music", 6.0)
+            bed *= swell[:, None]
         mix[:len(bed)] += bed
         used.append((round(start, 1), f"music {stem}"))
     (WORK / f"{name}_sfx.json").write_text(json.dumps(used))
@@ -891,6 +910,8 @@ def build(name: str, draft: bool) -> None:
     EXTRA_GRADE.update(reel.get("grade", {}))
     ranges = reel["audio"] if reel.get("song") else tighten(drop_fillers(reel["audio"]), reel.get("pause", 0.24), reel.get("trim_edges", True))
     timeline = Timeline(ranges)
+    timeline.voice_end = timeline.duration              # a tail montage (reel["tail"]) extends the reel past the voice
+    timeline.duration += sum(length for _, _, length in reel.get("tail", []))
     plan = resolve(reel, timeline)
     OUT.mkdir(exist_ok=True)
     silent, mix = WORK / f"{name}_silent.mp4", WORK / f"{name}_mix.wav"
