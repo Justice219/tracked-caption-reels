@@ -67,5 +67,11 @@
  },
  "song": "music/choosin_texas_from_adobe_cache.wav",
  "sfx_dir": "~/.claude/skills/tracked-caption-reels/sfx",
- "music_dir": "~/Pictures/VIDEOS TO EDIT/Music/NCS"
+ "music_dir": "~/Pictures/VIDEOS TO EDIT/Music/NCS",
+ "grade": false,
+ "brand": {
+  "say": "canopy land solutions",
+  "logo": "~/path/to/logo.png",
+  "width": 440
+ }
 }

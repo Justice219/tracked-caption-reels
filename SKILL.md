@@ -40,7 +40,8 @@ To see the target look, watch the three source reels in `references/inspiration/
 | Tracking | Type follows the head/chest smoothly; crops follow the face. Never re-centre abruptly. |
 | Tight cuts | Drop "um"/"uh", pauses > 0.24 s, stumbles and unsure takes. Cut a stumbled line entirely. |
 | B-roll must show the thing being said | Check each cutaway frame; filler shots get removed. |
-| Light grade | Barely-there contrast; pull down only clearly over-bright clips, part of the way. |
+| Colour | Default to none (`"grade": false`); the owner asked for no colour editing. Grade only when asked, and lightly. |
+| Logo on the brand name | When the company name is spoken, show its logo instead of the words (`"brand"` in project.json). |
 | Quiet music | Bed ~25 dB under the voice. |
 | Lip-sync | Each take sits on the exact song second it was filmed against; the singer is on screen for their line. |
 

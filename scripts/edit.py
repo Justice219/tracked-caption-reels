@@ -60,6 +60,12 @@ TURN = _PROJECT.get("turn", {})
 #   "music_dir": folder of music beds (.m4a) for a reel's `music` key
 #                (default: the 23 effects bundled with the skill in its sfx/ folder)
 SFX_DIR = Path(_PROJECT.get("sfx_dir", str(Path.home() / ".claude/skills/tracked-caption-reels/sfx"))).expanduser()
+#   "brand": {"say": "canopy land solutions", "logo": "/path/logo.png", "width": 440}
+#                whenever the phrase is spoken, the logo pops in where the caption would be, instead of the words
+BRAND = _PROJECT.get("brand")
+#   "grade": false   leave the camera's colour and exposure exactly as shot (no curve, no exposure correction)
+if _PROJECT.get("grade") is False:
+    GRADE = "null"
 MUSIC_DIR = Path(_PROJECT.get("music_dir", str(ROOT.parents[2] / "Music" / "NCS"))).expanduser()
 CLIP_LEN = {k: v["duration"] for k, v in json.loads((WORK / "sync.json").read_text()).items()} if (WORK / "sync.json").exists() else {}
 
@@ -337,10 +343,25 @@ there here then than up out all any some also too about into over like i'm we're
 be am got get gets right now well yeah know mean kind sort""".split())
 FIXES = {"campy": "canopy", "camping": "canopy", "campyland": "canopy land", "caterpillar": "canopy", "insolutions": "solutions",
          "helodes": "helotes", "sel": "scl", "mossad": "sod", "chalk": "chop", "vending": "bender", "boards": "board", "handy": "hand digging",
-         "nikolo": "nicolo"}
+         "nikolo": "nicola", "nicolo": "nicola", "nikola": "nicola", "nikolay": "nicola"}      # he spells it Nicola
 
 
-def clusters(reel: dict, timeline: Timeline) -> list[dict]:
+@lru_cache(maxsize=4)
+def logo_sprite(path: str, width: int) -> np.ndarray:
+    """The brand logo (transparent PNG) scaled to `width`, with a soft shadow so it lifts off the footage."""
+    image = Image.open(Path(path).expanduser()).convert("RGBA")
+    image = image.crop(image.getchannel("A").getbbox())
+    image = image.resize((width, int(width * image.height / image.width)), Image.LANCZOS)
+    pad = 30
+    out = Image.new("RGBA", (image.width + 2 * pad, image.height + 2 * pad), (0, 0, 0, 0))
+    shadow = Image.new("L", out.size, 0)
+    shadow.paste(image.getchannel("A"), (pad, pad + 8))
+    out.putalpha(shadow.filter(ImageFilter.GaussianBlur(12)).point(lambda v: int(v * 0.55)))
+    out.alpha_composite(image, (pad, pad))
+    return np.asarray(out).copy()
+
+
+def clusters(reel: dict, timeline: Timeline, brand_out: list | None = None) -> list[dict]:
     """Turn the spoken words into reference-style clusters: 2-4 words stacked in mixed sizes that build with the voice.
 
     A cluster holding one of the reel's `keys` is a "head" cluster (large, behind the speaker's head, key word in an
@@ -373,6 +394,24 @@ def clusters(reel: dict, timeline: Timeline) -> list[dict]:
             words.append(dict(t=timeline.out(mic, max(word["start"], a)), end=timeline.out(mic, min(word["end"], b)), text=text.rstrip("?!") if token not in keys else text,
                               token=token, stop=raw.rstrip()[-1:] in ".?!" or token in reel.get("breaks", ()), soft=raw.rstrip()[-1:] == ",", key=token in keys))
     words.sort(key=lambda w: w["t"])
+    if BRAND and brand_out is not None:                 # the spoken brand name becomes the logo, not caption words
+        target, kept, i = norm(BRAND["say"]), [], 0
+        while i < len(words):
+            run = next((n for n in (1, 2, 3, 4) if i + n <= len(words) and "".join(norm(w["text"]) for w in words[i:i + n]) == target), 0)
+            if not run:
+                kept.append(words[i])
+                i += 1
+                continue
+            start, spoken_end = words[i]["t"], words[i + run - 1]["end"]
+            following = words[i + run]["t"] if i + run < len(words) else None
+            end = max(spoken_end + 0.3, start + 0.9)
+            if following is not None:
+                end = max(min(end, following + 0.15), start + 0.6)
+            brand_out.append(dict(start=start, end=end))
+            if kept:
+                kept[-1]["stop"] = True                 # the stack before the logo ends there
+            i += run
+        words = kept
     groups, current = [], []
     for i, word in enumerate(words):
         gap = word["t"] - current[-1]["end"] if current else 0.0
@@ -577,6 +616,8 @@ def exposure(clip: str) -> str:
     Six frames across the clip are measured: the mean brightness is nudged toward ~0.48 with a mild gamma (never below 0.88), and when the
     brightest areas are near clipping the top of the curve is rolled off so skies, concrete and shirts keep detail.
     """
+    if GRADE == "null":                                     # colour untouched for this shoot
+        return ""
     turn = TURN.get(clip, 2)
     raw = subprocess.run([FFMPEG, "-v", "error", "-i", str(SOURCE / "video" / f"{clip}.MP4"), "-vf",
                           f"fps=6/{max(CLIP_LEN.get(clip, 6), 1):.2f},scale=96:54", "-frames:v", "6", "-f", "rawvideo", "-pix_fmt", "gray", "-"],
@@ -666,7 +707,8 @@ def resolve(reel: dict, timeline: Timeline) -> dict:
     for card in reel.get("cards", []):
         start = timeline.duration - card["dur"] if card.get("at") == "end" else timeline.out(card["mic"], card["at"]) + card.get("shift", 0.0)
         cards.append(dict(card, start=start, end=min(start + card["dur"], timeline.duration + 1)))
-    return dict(shots=shots, broll=broll, cards=cards, clusters=clusters(reel, timeline))
+    brand = []
+    return dict(shots=shots, broll=broll, cards=cards, clusters=clusters(reel, timeline, brand), brand=brand)
 
 
 def picture(name: str, reel: dict, timeline: Timeline, plan: dict, out_path: Path, draft: bool) -> None:
@@ -735,6 +777,8 @@ def picture(name: str, reel: dict, timeline: Timeline, plan: dict, out_path: Pat
                     chest = ((track.chest[0] - centre[0]) * scale + W / 2, (track.chest[1] - centre[1]) * scale + H / 2)
                     head_size = track.size * scale
             cluster = next((x for x in plan["clusters"] if x["start"] <= t < x["end"]), None)
+            if any(e["start"] - 0.04 <= t < e["end"] for e in plan["brand"]):
+                cluster = None                              # the logo stands alone: no caption words under it
             if cluster is not None:
                 on_person = b is None and track.head is not None
                 half = min(cluster["width"] / 2, W / 2 - 4)             # the whole stack stays on screen
@@ -764,6 +808,19 @@ def picture(name: str, reel: dict, timeline: Timeline, plan: dict, out_path: Pat
                     draw_cluster(frame, cluster, t, min(max(chest[0], half), W - half), min(max(chest[1], 760), 1440))
                 else:
                     draw_cluster(frame, cluster, t, W / 2, 1260)
+            for event in plan["brand"]:                    # brand name spoken: logo pops in at the caption position
+                if event["start"] - 0.04 <= t < event["end"]:
+                    sprite = logo_sprite(BRAND["logo"], BRAND.get("width", 440))
+                    age_b = t - event["start"] + 0.04
+                    if b is None and track.head is not None:
+                        half_b = sprite.shape[1] / 2
+                        # kept clear of the website line when the end card is up
+                        low = 1120 if any(c["kind"] == "cta" and c["start"] <= t < c["end"] for c in plan["cards"]) else 1380
+                        spot = (min(max(chest[0], half_b), W - half_b), min(max(chest[1] - 40, 700), low))
+                    else:
+                        spot = (W / 2, 1200)
+                    blit(frame, sprite, spot[0], spot[1], min(age_b / 0.08, 1.0) * min(max((event["end"] - t) / 0.1, 0.0), 1.0),
+                         0.6 + 0.4 * back_out(age_b / 0.18))
             for card in plan["cards"]:
                 if card["start"] <= t < card["end"]:
                     draw_card(frame, card, t, accent)
@@ -858,7 +915,8 @@ def sound(name: str, reel: dict, timeline: Timeline, plan: dict, out_path: Path)
         mix = np.repeat(np.pad(voice, (0, length - len(voice)))[:, None], 2, axis=1)
     cues = [(b["start"] - 0.05, "whoosh") for b in plan["broll"]]
     cues += [(s["start"] - 0.05, "whoosh") for s in plan["shots"][1:] if s["cut"] and (reel.get("whip_cuts", False) or s.get("tail"))]
-    cues += [(c["start"], "pop") for c in plan["clusters"] if c["head"]]          # one soft tick as each big word lands
+    cues += [(c["start"], "pop") for c in plan["clusters"] if c["head"]]
+    cues += [(e["start"], "pop") for e in plan.get("brand", [])]          # one soft tick as each big word lands
     for card in plan["cards"]:
         default = {"stamp": "hit", "cta": "pop", "lower": "whoosh", "stars": "pop", "icons": "hit", "question": "pop", "label": "pop", "note": None, "sticker": "hit"}[card["kind"]]
         if card.get("sfx", default):

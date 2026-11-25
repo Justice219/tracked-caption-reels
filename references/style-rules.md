@@ -29,6 +29,11 @@ copies them; these rules are the corrections made on the way.
   icons, a tilted stamp word, a cut-out sticker for a meme beat, a small corner note.
 - Fonts used: Halenoir Black / Bold, Apple Garamond Bold Italic. Never Arial.
 
+- **Brand name spoken = logo shown.** When the owner's company name is said, its logo pops in at the caption
+  position instead of the words (`"brand"` in `work/project.json`: phrase, logo path, width). No caption words
+  under the logo; it stays clear of the end-card website line.
+- **Names:** check spellings with the owner (the Canopy presenter is "Nicola", not "Nicolo").
+
 ## Picture
 
 - **Face crops on jump cuts.** Shots of the same clip step through: full frame, close (head ~205 px wide),
@@ -39,7 +44,9 @@ copies them; these rules are the corrections made on the way.
   used at the owner's request, marked with a small corner note.
 - **3D design renders** or other outside clips can be cutaways (give an absolute path); crop off any caption
   strip that shows a client's address.
-- **Grade:** barely-there S-curve. A clip is pulled down only when its mean brightness is clearly high, with a
+- **Colour:** ask before touching it. The owner's latest instruction was no colour editing at all
+  (`"grade": false` in `work/project.json` leaves the footage exactly as shot). When grading is wanted:
+  barely-there S-curve. A clip is pulled down only when its mean brightness is clearly high, with a
   gamma no lower than 0.88 and a soft highlight roll-off. "Too intense" was the feedback on anything stronger.
 
 ## Sound
